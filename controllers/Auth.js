@@ -2,24 +2,21 @@ const jwt = require("jsonwebtoken");
 const OTP = require("../models/otp");
 const User = require("../models/user");
 const bcrypt = require("bcrypt");
+const user = require("../models/user");
 
-// ----------- Generate OTP Function -----------
 exports.generateOtp = async (req, res) => {
   try {
     const { email } = req.body;
 
-    // Generate 6-digit OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-    // Save OTP to DB
     await OTP.create({ email, otp });
 
-    // Here you can call sendOtpEmail(email, otp) if needed
 
     return res.status(200).json({
       success: true,
       message: "OTP sent successfully",
-      otp, // remove in production!
+      otp
     });
   } catch (error) {
     return res.status(500).json({
@@ -30,12 +27,10 @@ exports.generateOtp = async (req, res) => {
   }
 };
 
-// ----------- Signup Function -----------
 exports.signup = async (req, res) => {
   try {
     const { firstName, lastName, email, password, confirmPassword, otp } = req.body;
 
-    // Validation
     if (!firstName || !lastName || !email || !password || !confirmPassword || !otp) {
       return res.status(400).json({ success: false, message: "All fields are required." });
     }
@@ -49,16 +44,13 @@ exports.signup = async (req, res) => {
       return res.status(409).json({ success: false, message: "User already registered." });
     }
 
-    // Verify OTP
     const validOtpEntry = await OTP.findOne({ email }).sort({ createdAt: -1 });
     if (!validOtpEntry || validOtpEntry.otp !== otp) {
       return res.status(400).json({ success: false, message: "Invalid or expired OTP." });
     }
 
-    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create new user
     const newUser = await User.create({
       firstName,
       lastName,
@@ -66,15 +58,14 @@ exports.signup = async (req, res) => {
       password: hashedPassword,
     });
 
-    // Generate JWT token
     const payload = {
       _id: newUser._id,
       email: newUser.email,
+      role : user.role
     };
 
     const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "7d" });
 
-    // Set token in cookie
     res
       .cookie("token", token, { httpOnly: true, maxAge: 7 * 24 * 60 * 60 * 1000 })
       .status(200)
@@ -110,7 +101,7 @@ exports.login = async (req,res) => {
       })
     }
 
-    const user = await User.find({email});
+    const user = await User.findOne({email});
     if(!user) {
       return res.status(400).json({
         success: false,
@@ -118,11 +109,14 @@ exports.login = async (req,res) => {
       })
     }
 
-    if(bcrypt.compare(password, user.password))
+    console.log("Password", password, user, user?.password)
+
+    if(await bcrypt.compare(password, user.password))
     {
       const payload = {
         email : user.email,
         _id: user._id,
+        role : user.role
 
     }
        const token = jwt.sign(payload, process.env.JWT_SECRET, {

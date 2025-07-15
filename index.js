@@ -5,6 +5,7 @@ const cors = require("cors");
 
 const database = require("./config/database");
 const userRoutes = require("./routes/user");
+const skillRoutes = require("./routes/skill");
 
 dotenv.config();
 const app = express();
@@ -25,6 +26,8 @@ app.use(
 
 // Routes
 app.use("/api/v1/user", userRoutes);
+app.use("/api/v1/skill", skillRoutes);
+
 
 // Default route
 app.get("/", (req, res) => {

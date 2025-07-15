@@ -5,7 +5,7 @@ const userSchema = new Schema({
   firstName: { type: String, required: true },
   lastName:  { type: String, required: true },
   email:     { type: String, required: true, unique: true },
-  number:    { type: String,  unique: true },
+  number:    { type: String },
   
   profilePic:{ type: String },
   offeredSkills: [{ type: Schema.Types.ObjectId, ref: 'Skill' }], 
@@ -16,6 +16,7 @@ const userSchema = new Schema({
   createdAt:    { type: Date, default: Date.now },
   updatedAt:    { type: Date, default: Date.now },
   password: {type: String, required: true},
+  role: {type : String, enum : ['customer','admin'], default : 'customer'}
   
 });
 
