@@ -30,8 +30,10 @@ exports.generateOtp = async (req, res) => {
 exports.signup = async (req, res) => {
   try {
     const { firstName, lastName, email, password, confirmPassword, otp } = req.body;
+    console.log(req.body)
 
-    if (!firstName || !lastName || !email || !password || !confirmPassword || !otp) {
+
+    if (!firstName  || !email || !password || !confirmPassword || !otp) {
       return res.status(400).json({ success: false, message: "All fields are required." });
     }
 
@@ -61,7 +63,7 @@ exports.signup = async (req, res) => {
     const payload = {
       _id: newUser._id,
       email: newUser.email,
-      role : user.role
+      role : newUser.role
     };
 
     const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "7d" });
