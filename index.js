@@ -6,6 +6,7 @@ const cors = require("cors");
 const database = require("./config/database");
 const userRoutes = require("./routes/user");
 const skillRoutes = require("./routes/skill");
+const rateLimitar = require("./utils/rateLimitar");
 
 dotenv.config();
 const app = express();
@@ -19,13 +20,13 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(
   cors({
-    origin: "http://192.168.2.13:8081",
+    origin: "http://192.168.2.21:8081",
     credentials: true,
   })
 );
 
 // Routes
-app.use("/api/v1/user", userRoutes);
+app.use("/api/v1/user", rateLimitar, userRoutes);
 app.use("/api/v1/skill", skillRoutes);
 
 
