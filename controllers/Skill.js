@@ -1,7 +1,7 @@
 const Skill = require("../models/skill");
 const User = require("../models/user");
 
-// Create new skill
+
 exports.createSkill = async (req, res) => {
   try {
     const { name, category } = req.body;
@@ -32,6 +32,7 @@ exports.createSkill = async (req, res) => {
 exports.assignSkill = async (req, res) => {
   try {
     const { offeredSkills, exploreSkills} = req.body;
+    console.log(req.body)
     const {userId } = req.params;
 
     if (!userId || !offeredSkills || !exploreSkills) {
@@ -73,3 +74,21 @@ exports.assignSkill = async (req, res) => {
     });
   }
 };
+
+
+exports.allSkill = async (req,res) => {
+  try {
+    const skill = await  Skill.find({});
+    return res.status(200).json({
+      skill,
+      success: true,
+      message:"Skill fetch successfully."
+    })
+  } catch (error) {
+    return res.status(400).json({
+      success: false,
+      message:"Skill not fetched",
+      error: error.message
+    })
+  }
+}
