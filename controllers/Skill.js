@@ -111,3 +111,82 @@ exports.allSkill = async (req,res) => {
     })
   }
 }
+
+
+
+exports.trendingskillByLocation = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const limit = parseInt(req.query.limit) || 5;
+
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        message: "UserId is required"
+      });
+    }
+
+    const user = await User.findById(userId);
+    if (!user || !user.city || !user.state) {
+      return res.status(400).json({
+        success: false,
+        message: "User or location not found"
+      });
+    }
+
+    const usersInSameLocation = await User.find({
+      city: user.city,
+      state: user.state
+    }).populate('offeredSkills');
+
+    const skillCount = {};
+
+    usersInSameLocation.forEach(u => {
+      u.offeredSkills.forEach(skill => {
+        const id = skill._id.toString();
+        if (!skillCount[id]) {
+          skillCount[id] = {
+            skillId: skill._id,
+            name: skill.name,
+            count: 1
+          };
+        } else {
+          skillCount[id].count += 1;
+        }
+      });
+    });
+
+    const sortedSkills = Object.values(skillCount)
+      .sort((a, b) => b.count - a.count)
+      .map((s, index) => ({
+        rank: index + 1,
+        name: s.name,
+        count: s.count,
+        skillId: s.skillId
+      }))
+      .slice(0, limit);
+
+      const shuffledSkills = sortedSkills.sort(() => 0.5 - Math.random());
+      const topSkills = shuffledSkills.slice(0, limit);
+
+
+    return res.status(200).json({
+      success: true,
+      skills: sortedSkills,
+      topSkills,
+      totalUsers: usersInSameLocation.length,
+      location: {
+        city: user.city,
+        state: user.state
+      }
+    });
+
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: error.message
+    });
+  }
+};
