@@ -31,9 +31,8 @@ exports.createSkill = async (req, res) => {
 
 exports.assignSkill = async (req, res) => {
   try {
-    const { offeredSkills, exploreSkills} = req.body;
-    console.log(req.body)
-    const {userId } = req.params;
+    const { offeredSkills, exploreSkills, location } = req.body;
+    const { userId } = req.params;
 
     if (!userId || !offeredSkills || !exploreSkills) {
       return res.status(400).json({
@@ -52,20 +51,38 @@ exports.assignSkill = async (req, res) => {
       });
     }
 
+    const addUserToSkills = async (skills) => {
+      for (const skill of skills) {
+        if (!skill.users.includes(userId)) {
+          skill.users.push(userId);
+          await skill.save();
+        }
+      }
+    };
+
+    await addUserToSkills(findOfferedSkills);
+    await addUserToSkills(findExploreSkills);
+
+    const updateData = {
+      offeredSkills: findOfferedSkills.map(skill => skill._id),
+      exploreSkills: findExploreSkills.map(skill => skill._id),
+    };
+
+    if (location?.city) updateData.city = location.city;
+    if (location?.state) updateData.state = location.state;
+
     const updatedUser = await User.findByIdAndUpdate(
       userId,
-      {
-        offeredSkills: findOfferedSkills.map(skill => skill._id),
-        exploreSkills: findExploreSkills.map(skill => skill._id),
-      },
+      updateData,
       { new: true }
     ).populate("offeredSkills exploreSkills");
 
     return res.status(200).json({
       success: true,
-      message: "Skills assigned to user successfully",
+      message: "Skills and location assigned to user successfully",
       user: updatedUser,
     });
+
   } catch (error) {
     return res.status(500).json({
       success: false,
@@ -74,6 +91,8 @@ exports.assignSkill = async (req, res) => {
     });
   }
 };
+
+
 
 
 exports.allSkill = async (req,res) => {

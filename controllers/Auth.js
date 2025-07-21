@@ -53,12 +53,15 @@ exports.signup = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const newUser = await User.create({
-      firstName,
-      lastName,
-      email,
-      password: hashedPassword,
-    });
+    const profilePic = `https://api.multiavatar.com/${firstName}.png`;
+
+const newUser = await User.create({
+  firstName,
+  lastName,
+  email,
+  password: hashedPassword,
+  profilePic
+});
 
     const payload = {
       _id: newUser._id,

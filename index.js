@@ -20,7 +20,7 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(
   cors({
-    origin: "http://192.168.2.13:8081",
+    origin: process.env.IP,
     credentials: true,
   })
 );
