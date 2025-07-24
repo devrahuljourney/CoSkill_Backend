@@ -4,7 +4,8 @@ const cookieParser = require("cookie-parser");
 const cors = require("cors");
 
 const database = require("./config/database");
-const userRoutes = require("./routes/user");
+const authRoutes = require("./routes/auth");
+const userRoutes = require("./routes/user")
 const skillRoutes = require("./routes/skill");
 const rateLimitar = require("./utils/rateLimitar");
 
@@ -26,8 +27,9 @@ app.use(
 );
 
 // Routes
-app.use("/api/v1/user", rateLimitar, userRoutes);
+app.use("/api/v1/auth", rateLimitar, authRoutes);
 app.use("/api/v1/skill", skillRoutes);
+app.use("/api/v1/user", userRoutes)
 
 
 // Default route

@@ -1,8 +1,6 @@
 const express = require("express");
-const { signup, generateOtp, login } = require("../controllers/Auth");
-const Router = express.Router();
-
-Router.post('/sign-up', signup);
-Router.post('/otp-generate', generateOtp);
-Router.post('/login', login)
-module.exports = Router;
+const { auth } = require("../middlewares/auth");
+const { nearByPeopleByLocation } = require("../controllers/User");
+const router = express.Router();
+router.get("/get-near-user",auth,nearByPeopleByLocation);
+module.exports = router;
