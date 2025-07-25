@@ -45,3 +45,54 @@ exports.nearByPeopleByLocation = async (req, res) => {
         });
     }
 };
+
+exports.bestMatchForYou = async (req, res) => {
+    try {
+      const userId = req.user._id;
+  
+      // 1. Get current user and populate skills
+      const currentUser = await User.findById(userId)
+        .populate("exploreSkills")
+        .populate("offeredSkills");
+  
+      const allUsers = await User.find({ _id: { $ne: userId } })
+        .populate("exploreSkills")
+        .populate("offeredSkills");
+  
+      const matchedUsers = [];
+  
+      for (const user of allUsers) {
+        const matchedToMe = user.offeredSkills.filter(skill =>
+          currentUser.exploreSkills.some(s => s._id.equals(skill._id))
+        );
+  
+        const matchedFromMe = currentUser.offeredSkills.filter(skill =>
+          user.exploreSkills.some(s => s._id.equals(skill._id))
+        );
+  
+        if (matchedToMe.length > 0 || matchedFromMe.length > 0) {
+          const totalRelevantSkills = currentUser.exploreSkills.length + user.exploreSkills.length;
+          const matchPercentage = Math.round(
+            ((matchedToMe.length + matchedFromMe.length) / totalRelevantSkills) * 100
+          );
+  
+          matchedUsers.push({
+            _id: user._id,
+            firstName: user.firstName,
+            profilePic: user.profilePic,
+            matchPercentage,
+            matchedToMe: matchedToMe.map(skill => skill.name),
+            matchedFromMe: matchedFromMe.map(skill => skill.name),
+          });
+        }
+      }
+  
+      matchedUsers.sort((a, b) => b.matchPercentage - a.matchPercentage);
+  
+      res.status(200).json({ success: true, data: matchedUsers });
+    } catch (error) {
+      console.error("Best Match Error:", error);
+      res.status(500).json({ success: false, message: "Something went wrong." });
+    }
+  };
+  
