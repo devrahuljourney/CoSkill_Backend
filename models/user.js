@@ -14,6 +14,7 @@ const userSchema = new Schema({
   meetings:     [{ type: Schema.Types.ObjectId, ref: 'Exchange' }],
   requestConnection: [{type : Schema.Types.ObjectId, ref :"User"}],
   acceptConnection : [{type : Schema.Types.ObjectId, ref : "User"}],
+  requestSent: [{type : Schema.Types.ObjectId, ref : "User"}],
   jwtToken:     { type: String },
   passwordResetToken: { type: String },
   createdAt:    { type: Date, default: Date.now },
