@@ -21,22 +21,32 @@ exports.getAvailableUser = async (req,res) => {
             })
         }
 
-        const meetings = await PersonalMeeting.find({$or: [ {hostedUser : userId}, {sender: userId}]});
+        const meetings = await PersonalMeeting.find({
+            $and: [
+              { status: "accepted" },
+              { $or: [{ hostUser: userId }, { sender: userId }] }
+            ]
+          });
+          
 
         const alreadyBookedUser = new Set();
-        console.log("alreadybookeduser", alreadyBookedUser);
         alreadyBookedUser.add(userId.toString());
 
         meetings.forEach((meeting) => {
             alreadyBookedUser.add(meeting.hostUser.toString())
             alreadyBookedUser.add(meeting.sender.toString())
         })
-        console.log("alreadybookeduser", alreadyBookedUser);
 
 
-        const totalUser = await User.find({_id : {$nin : Array.from(alreadyBookedUser)}}).select("-password");
+        const availableUsers = await User.find({
+            _id: {
+              $in: user.acceptConnection, 
+              $nin: Array.from(alreadyBookedUser), 
+            }
+          }).select("-password");
+          
         return res.status(200).json({
-            users : totalUser,
+            users : availableUsers,
             message: "User fetched successfully",
             success: true
         })
