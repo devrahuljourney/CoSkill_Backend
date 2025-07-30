@@ -8,7 +8,8 @@ const authRoutes = require("./routes/auth");
 const userRoutes = require("./routes/user")
 const skillRoutes = require("./routes/skill");
 const rateLimitar = require("./utils/rateLimitar");
-const connectionsRoutes = require("./routes/connections")
+const connectionsRoutes = require("./routes/connections");
+const personalMeetingRoutes = require("./routes/personalMeeting");
 
 dotenv.config();
 const app = express();
@@ -31,7 +32,9 @@ app.use(
 app.use("/api/v1/auth", rateLimitar, authRoutes);
 app.use("/api/v1/skill", skillRoutes);
 app.use("/api/v1/user", userRoutes);
-app.use("/api/v1/connection", connectionsRoutes)
+app.use("/api/v1/connection", connectionsRoutes);
+app.use("/api/v1/personal-meeting", personalMeetingRoutes);
+
 
 
 // Default route
