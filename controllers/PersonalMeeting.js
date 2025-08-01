@@ -21,10 +21,13 @@ exports.getAvailableUser = async (req,res) => {
             })
         }
 
+        const date = Date.now()
+
         const meetings = await PersonalMeeting.find({
             $and: [
               { status: "accepted" },
-              { $or: [{ hostUser: userId }, { sender: userId }] }
+              { $or: [{ hostUser: userId }, { sender: userId }] },
+              { date: { $gt: date } }
             ]
           });
           
@@ -106,7 +109,7 @@ exports.getBookSlotByDate = async (req, res) => {
       const existingMeeting = await PersonalMeeting.findOne({
         hostUser,
         date,
-        time,
+        time : time.start,
       });
   
       if (existingMeeting) {
@@ -120,7 +123,7 @@ exports.getBookSlotByDate = async (req, res) => {
         hostUser,
         sender,
         date,
-        time,
+        time: time.start,
         duration: duration || 30,
         senderMessage,
       });
@@ -220,6 +223,44 @@ exports.getBookSlotByDate = async (req, res) => {
       return res.status(500).json({
         success: false,
         message: "Internal Server Error",
+      });
+    }
+  };
+  
+
+  exports.getMeetingByStatus = async (req, res) => {
+    try {
+      const { status } = req.body;
+      const userId = req.user._id;
+  
+      if (!status) {
+        return res.status(400).json({
+          success: false,
+          message: "Status not found"
+        });
+      }
+  
+      const date = Date.now();
+  
+      const meetings = await PersonalMeeting.find({
+        status,
+        date: { $gt: date },
+        $or: [
+          { hostUser: userId },
+          { sender: userId }
+        ]
+      }).sort({ date: 1 }); 
+  
+      return res.status(200).json({
+        success: true,
+        meetings
+      });
+  
+    } catch (error) {
+      console.error("GET MEETINGS ERROR:", error);
+      return res.status(500).json({
+        success: false,
+        message: "Internal server error"
       });
     }
   };
