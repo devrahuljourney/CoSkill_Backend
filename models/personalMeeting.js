@@ -11,6 +11,10 @@ const personalMeetingSchema = new Schema({
   status: { type: String, enum: ["pending", "accepted", "rejected"], default: "pending" },
   senderMessage: { type: String },
   rejectionMessage: { type: String },
+  expireAt: {
+    type: Date,
+    index: { expires: 0 }
+  }
 }, { timestamps: true });
 
 module.exports = mongoose.model('PersonalMeeting', personalMeetingSchema);

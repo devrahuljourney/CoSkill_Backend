@@ -118,6 +118,8 @@ exports.getBookSlotByDate = async (req, res) => {
           message: "This time slot is already booked",
         });
       }
+
+      const meetingDate = new Date(date);
   
       const newMeeting = await PersonalMeeting.create({
         hostUser,
@@ -126,6 +128,7 @@ exports.getBookSlotByDate = async (req, res) => {
         time: time.start,
         duration: duration || 30,
         senderMessage,
+        expireAt: new Date(meetingDate.getTime() + 24 * 60 * 60 * 1000)
       });
   
       return res.status(201).json({
@@ -170,7 +173,10 @@ exports.getBookSlotByDate = async (req, res) => {
       }
   
       const roomId = `${meeting._id}-${Date.now()}`;
-      const jitsiLink = `https://meet.jit.si/${roomId}`;
+      // const jitsiLink = `https://meet.jit.si/${roomId}`;
+      // const jitsiLink = `https://8x8.vc/${roomId}`;
+      const jitsiLink = `https://meet.ffmuc.net/${roomId}?config.prejoinPageEnabled=false`;
+
   
       meeting.status = "accepted";
       meeting.meetingLink = jitsiLink;
@@ -240,27 +246,75 @@ exports.getBookSlotByDate = async (req, res) => {
         });
       }
   
-      const date = Date.now();
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
   
       const meetings = await PersonalMeeting.find({
         status,
-        date: { $gt: date },
+        date: { $gte: today },
         $or: [
           { hostUser: userId },
           { sender: userId }
         ]
-      }).sort({ date: 1 }); 
+      }).populate("hostUser").sort({ date: -1 , time: -1});
   
       return res.status(200).json({
         success: true,
         meetings
       });
   
+  
     } catch (error) {
       console.error("GET MEETINGS ERROR:", error);
       return res.status(500).json({
         success: false,
         message: "Internal server error"
+      });
+    }
+  };
+  
+
+  exports.rejectMeeting = async (req, res) => {
+    try {
+      const { meetingId, rejectionMessage } = req.body;
+  
+      if (!meetingId || !rejectionMessage) {
+        return res.status(400).json({
+          success: false,
+          message: "Meeting ID and rejection message are required",
+        });
+      }
+  
+      const meeting = await PersonalMeeting.findById(meetingId);
+      if (!meeting) {
+        return res.status(404).json({
+          success: false,
+          message: "Meeting not found",
+        });
+      }
+  
+      if (meeting.status === "rejected") {
+        return res.status(409).json({
+          success: false,
+          message: "Meeting is already rejected",
+        });
+      }
+  
+      meeting.status = "rejected";
+      meeting.rejectionMessage = rejectionMessage;
+      await meeting.save();
+  
+      return res.status(200).json({
+        success: true,
+        message: "Meeting rejected",
+        meeting,
+      });
+  
+    } catch (error) {
+      console.error("Error in rejectMeeting:", error);
+      return res.status(500).json({
+        success: false,
+        message: "Internal Server Error",
       });
     }
   };
