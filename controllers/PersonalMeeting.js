@@ -105,6 +105,8 @@ exports.getBookSlotByDate = async (req, res) => {
           message: "Missing required fields (hostUser, sender, date, or time)",
         });
       }
+
+      const hostUserData = await User.findById(hostUser)
   
       const existingMeeting = await PersonalMeeting.findOne({
         hostUser,
@@ -135,6 +137,7 @@ exports.getBookSlotByDate = async (req, res) => {
         success: true,
         message: "Meeting request sent",
         meeting: newMeeting,
+        expoToken: hostUserData.expoToken
       });
   
     } catch (error) {

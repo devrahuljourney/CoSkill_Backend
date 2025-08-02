@@ -23,6 +23,7 @@ const userSchema = new Schema({
   role: {type : String, enum : ['customer','admin'], default : 'customer'},
   city:         { type: String },
   state:        { type: String },
+  expoToken: {type: String}
   
 });
 

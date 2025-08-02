@@ -158,3 +158,18 @@ res.cookie("token",token, options).status(200).json({
         })
   }
 }
+
+exports.pushExpoToken = async (req, res) => {
+   try {
+    const { userId, expoToken } = req.body;
+    if (!userId || !expoToken) return res.sendStatus(400);
+  
+    await User.findByIdAndUpdate(userId, { expoToken });
+    res.status(200).json({
+      success: true,
+      message:"token insert"
+    });
+   } catch (error) {
+    
+   }
+}
