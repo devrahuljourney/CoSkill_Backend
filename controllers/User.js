@@ -170,5 +170,58 @@ exports.bestMatchForYou = async (req, res) => {
     }
   };
   
+  exports.getProfileData = async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const loggedInUserId = req.user._id; 
+  
+      if (!userId) {
+        return res.status(400).json({
+          success: false,
+          message: "UserId is not found",
+        });
+      }
+  
+      const user = await User.findById(userId)
+        .populate("exploreSkills offeredSkills acceptConnection")
+        .select("-password -expoToken");
+  
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: "User not found",
+        });
+      }
+  
+      let connectionStatus = "";
+    
 
+
+if (userId === String(loggedInUserId)) {
+  connectionStatus = "edit";
+} else if (user.acceptConnection.some(u => String(u._id) === String(loggedInUserId))) {
+  connectionStatus = "schedule"; 
+} else if (user.requestConnection.includes(loggedInUserId)) {
+  connectionStatus = "requested"; 
+} else {
+  connectionStatus = "connect";
+}
+
+      
+  
+      return res.status(200).json({
+        connectionStatus,
+        success: true,
+        message: "User profile fetched successfully",
+        data: user,
+      
+      });
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
+      return res.status(500).json({
+        success: false,
+        message: "Internal server error",
+      });
+    }
+  };
   

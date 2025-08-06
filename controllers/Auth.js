@@ -140,6 +140,7 @@ res.cookie("token",token, options).status(200).json({
     success:true,
     token,
     user,
+  
     message:'logged in'
 })
     }
