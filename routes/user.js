@@ -4,7 +4,7 @@ const { nearByPeopleByLocation, bestMatchForYou, searchBestMatch, getProfileData
 const { cachingBestMatch, cachingSearchMatch } = require("../middlewares/cacheMiddleware");
 const router = express.Router();
 router.get("/get-near-user",auth,nearByPeopleByLocation);
-router.get("/best-match", auth, cachingBestMatch, bestMatchForYou);
-router.get("/search-match",auth, cachingSearchMatch, searchBestMatch);
+router.get("/best-match", auth,  bestMatchForYou);
+router.get("/search-match",auth, searchBestMatch);
 router.get("/get-user/:userId",auth,getProfileData);
 module.exports = router;

@@ -89,7 +89,7 @@ exports.bestMatchForYou = async (req, res) => {
       }
   
       matchedUsers.sort((a, b) => b.matchPercentage - a.matchPercentage);
-      await redisClient.set(`best-match:${userId}`, JSON.stringify(matchedUsers), 'EX' , 1800)
+      // await redisClient.set(`best-match:${userId}`, JSON.stringify(matchedUsers), 'EX' , 1800)
   
       res.status(200).json({ success: true, data: matchedUsers });
     } catch (error) {
@@ -156,12 +156,12 @@ exports.bestMatchForYou = async (req, res) => {
   
       matchedUsers.sort((a, b) => b.matchPercentage - a.matchPercentage);
   
-      await redisClient.set(
-        `search-match:${userId}:${searchQuery}`,
-        JSON.stringify(matchedUsers),
-        "EX",
-        1800
-      );
+      // await redisClient.set(
+      //   `search-match:${userId}:${searchQuery}`,
+      //   JSON.stringify(matchedUsers),
+      //   "EX",
+      //   1800
+      // );
   
       res.status(200).json({ success: true, data: matchedUsers });
     } catch (error) {
